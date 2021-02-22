@@ -41,9 +41,10 @@ export default class App extends Component {
         }
     }
 
-    _retrieveData() {
+    async _retrieveData() {
         //if (this._getData !== null) {
-        this.setState({ quotes: this._getData });
+        const tmpData = await this._getData();
+        this.setState({ quotes: tmpData });
         //}
         console.log('componentDidMount!!!', this.state.quotes);
     }
@@ -70,12 +71,12 @@ export default class App extends Component {
     _addQuote = (text, author) => {
         let quotes = this.state.quotes;
         console.log('addQuote quotes', quotes);
-        /* if (text && author) {
+        if (text && author) {
             quotes.push({ text, author });
             this._storeData(quotes);
         }
-        
-        this.setState({ showNewQuoteScreen: false, quotes }); */
+
+        this.setState({ showNewQuoteScreen: false, quotes });
     }
 
     componentDidMount() {
@@ -91,7 +92,8 @@ export default class App extends Component {
     // c) props ändern sich
     render() {
         let { index, quotes } = this.state;
-        const quote = data[index];
+        let quote = quotes[index];
+        //if (quote === undefined) quote = {};
         let nextIndex = index + 1;
         let lastIndex = index - 1;
         if (nextIndex === quotes.length) nextIndex = 0;
