@@ -66,6 +66,7 @@ export default class App extends Component {
     }
 
     componentDidMount() {
+        console.log(this.state.quotes.length);
         this._retrieveData();
     }
 
@@ -87,11 +88,13 @@ export default class App extends Component {
             <SafeAreaView style={styles.container}>
                 <StyledButton
                     style={styles.newButton}
+                    visible={true}
                     title='Neues Zitat'
                     onPress={() => this.setState({ showNewQuoteScreen: true })}
                 />
                 <StyledButton
                     style={styles.deleteButton}
+                    visible={quotes.length >= 1}
                     title='Zitat löschen'
                     onPress={() => this._deleteButton()}
                 />
@@ -102,11 +105,13 @@ export default class App extends Component {
                 {content}
                 <StyledButton
                     style={styles.nextButton}
+                    visible={quotes.length >= 1}
                     title='Nächstes Zitat'
                     onPress={() => this._displayNextQuote()}
                 />
                 <StyledButton
                     style={styles.lastButton}
+                    visible={quotes.length >= 1}
                     title='Letztes Zitat'
                     onPress={() => this._displayNextQuote()}
                 />
