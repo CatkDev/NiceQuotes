@@ -6,23 +6,9 @@ import Quote from './js/components/Quote';
 import NewQuote from './js/components/NewQuote';
 import StyledButton from './js/components/StyledButton';
 
-const data = [
-    {
-        text: 'Probleme kann man niemals mit derselben Denkweise lösen, durch die sie entstanden',
-        author: 'Albert Einstein'
-    },
-    {
-        text: 'Man kann den Wind nicht ändern, aber man kann das Segel neu setzen',
-        author: 'Aristoteles'
-    },
-    {
-        text: 'Am Ende der Ausreden beginnt dein Leben',
-        author: 'Internet'
-    }
-];
 
 export default class App extends Component {
-    state = { index: 0, showNewQuoteScreen: false, quotes: data }; // initialer Zustand
+    state = { index: 0, showNewQuoteScreen: false, quotes: [] };
 
     _storeData = async (quotes) => {
         try {
@@ -47,7 +33,6 @@ export default class App extends Component {
             const tmpData = await this._getData();
             this.setState({ quotes: tmpData });
         }
-        console.log('componentDidMount!!!', this.state.quotes);
     }
 
     _addQuote = (text, author) => {
@@ -81,7 +66,6 @@ export default class App extends Component {
     }
 
     componentDidMount() {
-        //alert('componentDidMount!!!');
         this._retrieveData();
     }
 
