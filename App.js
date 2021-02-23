@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet, View, Button, Platform, SafeAreaView } from 'react-native';
+import { StyleSheet, View, Button, Text, Platform, SafeAreaView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import Quote from './js/components/Quote';
@@ -56,7 +56,28 @@ export default class App extends Component {
             quotesArray.push({ text, author });
             this._storeData(this.state.quotes);
         }
-        this.setState({ showNewQuoteScreen: false, quotes: quotesArray });
+        this.setState({ index: quotesArray.length - 1, showNewQuoteScreen: false, quotes: quotesArray });
+    }
+
+    _displayNextQuote() {
+        let { index, quotes } = this.state;
+        let nextIndex = index + 1;
+        if (nextIndex === quotes.length) nextIndex = 0;
+        this.setState({ index: nextIndex });
+    }
+
+    _displayLastQuote() {
+        let { index, quotes } = this.state;
+        let lastIndex = index - 1;
+        if (lastIndex === -1) lastIndex = quotes.length - 1;
+        this.setState({ index: lastIndex });
+    }
+
+    _deleteButton() {
+        let { index, quotes } = this.state;
+        quotes.splice(index, 1);
+        this._storeData(quotes);
+        this.setState({ index: 0, quotes });
     }
 
     componentDidMount() {
@@ -73,11 +94,10 @@ export default class App extends Component {
     render() {
         let { index, quotes } = this.state;
         let quote = quotes[index];
-        //if (quote === undefined) quote = {};
-        let nextIndex = index + 1;
-        let lastIndex = index - 1;
-        if (nextIndex === quotes.length) nextIndex = 0;
-        if (lastIndex === -1) lastIndex = quotes.length - 1;
+        let content = <Text style={{ fontSize: 36 }}>Keine Zitate</Text>;
+        if (quote) {
+            content = <Quote text={quote.text} author={quote.author} />
+        }
         return (
             // JSX => JavaScript und XML
             <SafeAreaView style={styles.container}>
@@ -86,20 +106,25 @@ export default class App extends Component {
                     title='Neues Zitat'
                     onPress={() => this.setState({ showNewQuoteScreen: true })}
                 />
+                <StyledButton
+                    style={styles.deleteButton}
+                    title='Zitat löschen'
+                    onPress={() => this._deleteButton()}
+                />
                 <NewQuote
                     visible={this.state.showNewQuoteScreen}
                     onSave={this._addQuote}
                 />
-                <Quote text={quote.text} author={quote.author} />
+                {content}
                 <StyledButton
                     style={styles.nextButton}
                     title='Nächstes Zitat'
-                    onPress={() => this.setState({ index: nextIndex })}
+                    onPress={() => this._displayNextQuote()}
                 />
                 <StyledButton
                     style={styles.lastButton}
                     title='Letztes Zitat'
-                    onPress={() => this.setState({ index: lastIndex })}
+                    onPress={() => this._displayNextQuote()}
                 />
 
             </SafeAreaView>
@@ -129,5 +154,10 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 50,
         right: 20
+    },
+    deleteButton: {
+        position: 'absolute',
+        top: 50,
+        left: 20
     }
 });
