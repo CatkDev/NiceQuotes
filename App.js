@@ -6,7 +6,7 @@ import {
     SafeAreaView,
     Alert
 } from 'react-native';
-//import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import * as SQLite from 'expo-sqlite';
 
 import Quote from './js/components/Quote';
@@ -39,15 +39,6 @@ export default class App extends Component {
             )
         );
     }
-
-    /* _getData = async () => {
-        try {
-            const jsonQuotes = await AsyncStorage.getItem('@storage_Quotes');
-            return jsonQuotes != null ? JSON.parse(jsonQuotes) : null;
-        } catch (e) {
-            // error reading value
-        }
-    } */
 
     _retrieveData() {
         database.transaction(
@@ -109,7 +100,6 @@ export default class App extends Component {
         let { index, quotes } = this.state;
         this._removeQuoteFromDB(quotes[index].id);
         quotes.splice(index, 1);
-        //this._storeData(quotes);
         this.setState({ index: 0, quotes });
     }
 
