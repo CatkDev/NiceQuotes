@@ -6,49 +6,72 @@ import {
     SafeAreaView,
     Alert
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+//import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SQLite from 'expo-sqlite';
 
 import Quote from './js/components/Quote';
 import NewQuote from './js/components/NewQuote';
 import StyledButton from './js/components/StyledButton';
 
+const database = SQLite.openDatabase('quotes.db');
 
 export default class App extends Component {
     state = { index: 0, showNewQuoteScreen: false, quotes: [] };
 
-    _storeData = async (quotes) => {
-        try {
-            const jsonQuotes = JSON.stringify(quotes)
-            await AsyncStorage.setItem('@storage_Quotes', jsonQuotes)
-        } catch (e) {
-            // saving error
-        }
+    _saveQuoteToDB(text, author, qoutes) {
+        database.transaction(
+            transaction => transaction.executeSql(
+                'INSERT INTO quotes (text,author) VALUES (?,?)',
+                [text, author],
+                (_, result) =>
+                    (qoutes[quotes.length - 1].id = result.insertId)
+            )
+        );
     }
 
-    _getData = async () => {
+    _removeQuoteFromDB(id) {
+        database.transaction(
+            transaction => transaction.executeSql(
+                'DELETE FROM quotes WHERE id = ?',
+                [id],
+                (_, result) =>
+                    console.log('ID gelöscht:', result.insertId)
+            )
+        );
+    }
+
+    /* _getData = async () => {
         try {
             const jsonQuotes = await AsyncStorage.getItem('@storage_Quotes');
             return jsonQuotes != null ? JSON.parse(jsonQuotes) : null;
         } catch (e) {
             // error reading value
         }
-    }
+    } */
 
-    async _retrieveData() {
-        if (this._getData !== null) {
-            const tmpData = await this._getData();
-            this.setState({ quotes: tmpData });
-        }
-    }
+    _retrieveData() {
+        database.transaction(
+            transaction => transaction.executeSql(
+                'SELECT * FROM quotes',
+                [],
+                (_, result) =>
+                    this.setState({ quotes: result.rows._array })
+            )
+        );
+    };
 
     _addQuote = (text, author) => {
-        let quotesArray = this.state.quotes;
+        let { quotes } = this.state;
         if (text && author) {
-            quotesArray.push({ text, author });
-            this._storeData(this.state.quotes);
+            quotes.push({ text, author });
+            this._saveQuoteToDB(text, author, qoutes);
         }
-        this.setState({ index: quotesArray.length - 1, showNewQuoteScreen: false, quotes: quotesArray });
-    }
+        this.setState({
+            index: quotes.length - 1,
+            showNewQuoteScreen: false,
+            quotes
+        });
+    };
 
     _displayNextQuote() {
         let { index, quotes } = this.state;
@@ -84,25 +107,24 @@ export default class App extends Component {
 
     _deleteQuote() {
         let { index, quotes } = this.state;
+        this._removeQuoteFromDB(quotes[index].id);
         quotes.splice(index, 1);
-        this._storeData(quotes);
+        //this._storeData(quotes);
         this.setState({ index: 0, quotes });
     }
 
     componentDidMount() {
-        console.log(this.state.quotes.length);
+        database.transaction(
+            transaction =>
+                transaction.executeSql('CREATE TABLE IF NOT EXISTS quotes (id INTEGER PRIMARY KEY NOT NULL, text TEXT, author TEXT)'
+                )
+        );
         this._retrieveData();
     }
 
-    // Die Render Methode sorgt für die richtige Darstellung im UI
-    // render: Darstellung der Komponente im UI
-    // render wird automatisch ausgeführt:
-    // a) Komponente erscheint im UI (initialer Zustand in state)
-    // b) Zustand ändert sich (state) [ ==> this.setState(...)]
-    // c) props ändern sich
     render() {
         let { index, quotes } = this.state;
-        let quote = quotes[index];
+        const quote = quotes[index];
         let content = <Text style={{ fontSize: 36 }}>Keine Zitate</Text>;
         if (quote) {
             content = <Quote text={quote.text} author={quote.author} />
@@ -129,13 +151,13 @@ export default class App extends Component {
                 {content}
                 <StyledButton
                     style={styles.nextButton}
-                    visible={quotes.length >= 1}
+                    visible={quotes.length > 1}
                     title='Nächstes Zitat'
                     onPress={() => this._displayNextQuote()}
                 />
                 <StyledButton
                     style={styles.lastButton}
-                    visible={quotes.length >= 1}
+                    visible={quotes.length > 1}
                     title='Letztes Zitat'
                     onPress={() => this._displayNextQuote()}
                 />
