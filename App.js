@@ -18,13 +18,13 @@ const database = SQLite.openDatabase('quotes.db');
 export default class App extends Component {
     state = { index: 0, showNewQuoteScreen: false, quotes: [] };
 
-    _saveQuoteToDB(text, author, qoutes) {
+    _saveQuoteToDB(text, author, quotes) {
         database.transaction(
             transaction => transaction.executeSql(
                 'INSERT INTO quotes (text,author) VALUES (?,?)',
                 [text, author],
                 (_, result) =>
-                    (qoutes[quotes.length - 1].id = result.insertId)
+                    (quotes[quotes.length - 1].id = result.insertId)
             )
         );
     }
@@ -55,7 +55,7 @@ export default class App extends Component {
         let { quotes } = this.state;
         if (text && author) {
             quotes.push({ text, author });
-            this._saveQuoteToDB(text, author, qoutes);
+            this._saveQuoteToDB(text, author, quotes);
         }
         this.setState({
             index: quotes.length - 1,
